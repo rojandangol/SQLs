@@ -1,1 +1,88 @@
+#a. Report those payments greater than $100,000. Sort the report so the customer who made the highest payment appears first. 
 
+select Customers.customerName as 'Name', Payments.amount as 'amount' from Customers join Payments on Customers.customerNumber = Payments.customerNumber
+where amount> 100000 Order by amount DESC;
+
+#b. Reports those products that have been sold with a markup of 100% or more (i.e. the priceEach is at least twice the buyPrice).
+ 
+select Products.buyPrice as 'B Price' , OrderDetails.priceEach as 'pEach' ,productName from Products 
+join OrderDetails on Products.productCode = OrderDetails.productCode 
+where (priceEach >= (2*buyPrice));
+
+#c. Compute the commission for each sales representative, assuming the commission is 5% of the cost of an order. Sort by employee's last name and first name.
+
+select SUM(0.05*(OrderDetails.priceEach * OrderDetails.quantityOrdered)) as 'comission',salesRepEmployeeNumber as 'Sales Employee number' from Customers 
+join Orders on Customers.customerNumber = Orders.customerNumber 
+join OrderDetails on Orders.orderNumber = OrderDetails.orderNumber
+group by salesRepEmployeeNumber;
+  
+#d. Compute the average time between order date and ship date for each customer ordered by the largest difference.
+
+select Customers.customerName as 'Name' , Orders.customerNumber as 'C Num' ,avg(datediff(shippedDate, orderDate)) as 'avg_time_diff' from Orders
+join Customers on Customers.customerNumber = Orders.customerNumber
+GROUP BY Customers.customerNumber ORDER BY avg(datediff(shippedDate, orderDate))  DESC;
+
+  
+#e. List the employees who report to those employees who report to Diane Murphy. Use the CONCAT function to combine the employee's first name and last name into a single field for reporting.
+
+select CONCAT(reports.firstName,' ', reports.lastName)
+as 'Full Name of people reporting to Diane Murphy:'
+from Employees boss JOIN Employees reports
+ON boss.employeeNumber = reports.reportsTo
+WHERE boss.firstname = "Diane" and boss.lastname = "Murphy";
+
+
+
+#f. Report the number of customers in the USA, Germany, and France in descending order.
+
+select country, COUNT(contactFirstName) as 'No. of customers'
+from Customers 
+where country in ('USA', 'Germany', 'France')
+group by country
+order by COUNT(contactFirstName) DESC;
+
+
+#g. Report the number of orders with the status 'Disputed' for each customer in descending order.
+
+select Customers.customerNumber, Customers.customerName, COUNT(Orders.orderNumber) AS numberOfDisputedOrders
+from Orders 
+join Customers  on Orders.customerNumber = Customers.customerNumber
+where Orders.status = 'Disputed'
+group by  Customers.customerName,Customers.customerNumber
+order by numberOfDisputedOrders DESC;
+
+
+
+#h. Report the average sales price of each product that has been sold.
+
+select productName, AVG(OrderDetails.priceEach) AS averageSalesPrice
+from Products 
+join OrderDetails ON Products.productCode = OrderDetails.productCode
+group by Products.productName
+order by averageSalesPrice DESC;
+
+#i. Report those products whose average gross profit margin is less than 50%.
+
+select p.productName, AVG(od.priceEach - p.buyPrice) / AVG(p.buyPrice) * 100 AS averageProfitMargin
+from Products p
+join OrderDetails od ON p.productCode = od.productCode
+group by p.productName
+having averageProfitMargin < 50
+order by averageProfitMargin;
+
+
+#j. Report the value of each order shipped in May 2004 in ascending order by order date
+
+select Orders.orderNumber, Orders.orderDate, SUM(OrderDetails.quantityOrdered * OrderDetails.priceEach) AS orderValue
+from Orders 
+join OrderDetails  ON Orders.orderNumber = OrderDetails.orderNumber
+where Orders.shippedDate >= '2004-05-01' AND Orders.shippedDate <= '2004-05-31'
+group by Orders.orderNumber, Orders.orderDate
+order by Orders.orderDate ASC;
+
+#k. List the amount paid by each customer.
+
+select customerName,  SUM(OrderDetails.quantityOrdered * OrderDetails.priceEach) as "Amount Spent" from Customers
+join Orders on Customers.customerNumber = Orders.customerNumber
+join OrderDetails on Orders.orderNumber = OrderDetails.orderNumber
+group by Customers.customerName;
