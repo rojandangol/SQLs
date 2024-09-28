@@ -1,0 +1,102 @@
+ #7.8. Specify the following views in SQL on the COMPANY database schema shown in Figure 5.5.
+use llc;
+#a. A view that has the department name, manager name, and manager salary for every department
+CREATE VIEW Info AS
+SELECT D.Dname,E.Fname ,E.Lname ,E.Salary
+FROM Department D
+JOIN Employee E ON D.Mgr_ssn = E.Ssn;
+
+#b. A view that has the employee name, supervisor name, and employee sal- ary for each employee who works in the ‘Research’ department
+select e.Fname, e.Lname, e.Salary, ez.Fname
+from EMPLOYEE e
+join DEPARTMENT d
+on e.Dno = d.Dnumber
+join EMPLOYEE ez
+on ez.Dno = d.Dnumber
+where d.Dname ="Research" 
+and ez.Ssn = d.Mgr_ssn;
+
+#c. A view that has the project name, controlling department name, number of employees, 
+#and total hours worked per week on the project for each project
+select p.Pname, d.Dname,count( w.Essn), SUM(w.Hours)
+from DEPARTMENT d
+join PROJECT  p
+on d.Dnumber = p.Dnum
+join WORKS_ON w
+on p.Pnumber= w.Pno
+join EMPLOYEE e
+on  w.Essn = e.Ssn
+group by  p.Pname, d.Dname;
+
+#d. A view that has the project name, controlling department name, number of employees, 
+#and total hours worked per week on the project for each project with more than one employee working on it
+-- select p.Pname, d.Dname, count(e.ssn), SUM(w.Hours)
+-- from PROJECT p
+-- join DEPARTMENT d 
+-- on p.Dnum = d.Dnumber
+-- join EMPLOYEE e
+-- on  d.Dnumber = e.Dno
+-- join WORKS_ON w
+-- on e.SSN= w.Essn
+-- group by p.Pname, d.Dname, w.Hours
+-- having count(e.ssn) > 1;
+
+select p.Pname, d.Dname,count( w.Essn), SUM(w.Hours)
+from DEPARTMENT d
+join PROJECT  p
+on d.Dnumber = p.Dnum
+join WORKS_ON w
+on p.Pnumber= w.Pno
+join EMPLOYEE e
+on  w.Essn = e.Ssn
+group by  p.Pname, d.Dname
+having count(W.Essn) > 1;
+
+
+#The queries below use the library database, which can be obtained from our Teams site (access) or SQL Server. 
+#See me for help getting into the Library database if you are having trouble.
+ 
+#For 03-04, describe what the queries are doing in English. 
+#Note, do not use phrases such as “we join persons with orders”. 
+#Instead, say “we output persons with their corresponding orders.” 
+#Turn in the query in English and up to the first five result rows when the SQL is executed.
+ 
+#EX04_03 – 
+use library;
+SELECT property, COUNT(*) AS cnt 
+FROM person
+GROUP BY property;
+ 
+#EX04_04 – 
+SELECT S.SubjectType, COUNT(*) 
+FROM Book_Description BD, Subject S
+WHERE BD.SubjectID=S.SubjectID GROUP BY S.SubjectType;
+ 
+#For 05-06, write SQL queries for the following English queries.
+# Turn in the query in SQL and up to the first five result rows when the SQL is executed.
+use library;
+#EX04_05 – List the names of all authors who wrote more than one book in 1991. Be careful here, two authors may have the same name.
+select DISTINCT(a.FirstName) ,a.LastName
+from Author a
+join RelAuth r
+on a.AuthorId = r.AuthorId
+join Book_Description b
+on r.BookDescId = b.BookDescId
+where b.Year = 1991
+group by a.FirstName, a.LastName
+having count(*) > 1;
+
+#EX04_06 – List the number of distinct book authors for each year a book was published.
+ -- select b.Year, count(a.AuthorId) 
+--  from Book_Description b
+--  join RelAuth r
+--  on b.BookDescId = r.BookDescId
+--  join Author a
+--  on r.AuthorId = a.AuthorId
+--  group by b.Year , a.AuthorId ;
+
+SELECT b.Year, COUNT(DISTINCT a.AuthorId)
+FROM Book_Description b
+JOIN RelAuth r ON b.BookDescId = r.BookDescId
+JOIN Author a ON r.AuthorId = a.AuthorId
+GROUP BY b.Year;
